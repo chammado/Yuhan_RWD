@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2주차과제</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="in">
+        <div id="d_Top">
+            <b id="student_name">김병규</b>
+            <b id="student_id">202127073</b>
+        </div>
+        <div id="d_Left">
+            <a href="canvas.html"><button class="b">버튼1</button></a>
+            <a href="game.html"><button class="b">버튼2</button></a>
+        </div>
+        <div id="d_Right">
+            <canvas id="mycanvas" style="background-color: aliceblue;"width="1200" height="800">
+            </canvas>
+        </div>
+    </div>
+    <script>
+        let canvas = document.getElementById('mycanvas');
+        let context = canvas.getContext('2d');
+        context.beginPath();
+        context.strokeStyle = 'pink';
+        context.lineWidth = 5;
+        context.arc(600,400,200,0,2*Math.PI,false);
+        context.stroke();
+    </script>
+</body>
+</html>

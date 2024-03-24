@@ -1,0 +1,76 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+#in
+{
+    width: 1600px;
+    height: 900px;
+    background-color: red;
+}
+#d_Top
+{
+    width: 1600px;
+    height: 100px;
+    background-color: yellow;
+}
+#d_Top>b
+{
+    float: right;
+    font-size: 50px;
+    margin-top: 15px;
+}
+#student_name
+{
+   margin-right: 50px;
+   margin-left: 100px;
+}
+#d_Left
+{
+    width: 400px;
+    height: 800px;
+    background-color: blue;
+    float: left;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.b
+{
+    padding: 8px;
+    margin: 8px; 
+    width: 200px;
+    margin-top: 100px
+}
+#d_Right
+{
+    width: 1200px;
+    height: 800px;
+    background-color: green;
+    float: left;
+}
+#hi
+{
+    font-size: 300px;
+    display: block;
+    text-align: center;
+    margin-top: 100px;
+}
+img
+{
+    margin-top: 200px;
+    float: left;
+}
+ul
+{
+    list-style-position: inside;
+    margin-top: 200px;
+}
+li
+{
+    font-size: 24px;
+    margin-top: 25px;
+    margin-left: 650px
+    
+}
