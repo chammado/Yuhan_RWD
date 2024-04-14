@@ -1,0 +1,39 @@
+.container {
+    flex-direction: row;
+    margin-top: 200px;
+    border: 2px solid #333333;
+} 
+
+.make_heart {
+    margin: 0 auto;
+    width: 10px;
+    height: 10px;
+    background: #ea2027;
+    position: absolute; /* 부모 */
+    transform: rotate(45deg); /* 회전 */
+}
+
+.make_heart:before,
+.make_heart:after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    position: absolute; /* 자식 */
+    border-radius: 50%; /* 둥글게 */
+    background: #ea2027;
+}
+
+.make_heart:before {
+    left: -50%; /* 왼쪽으로 -50% */
+}
+
+.make_heart:after {
+    top: -50%; /* 위쪽으로 -50% */ 
+}
+
+.red { background-color: #ea2027; }
+.green { background-color: #009432; }
+.blue { background-color: #0652DD; }
+.orange { background-color: #F79F1F; }
+.pink { background-color: #EA2027; }
+.purple { background-color: #6F1E51; }
