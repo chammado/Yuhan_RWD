@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="400" height="400" style="border:1px solid #000000;">
+</canvas>
+
+<script>
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+
+// 작은 반원 그리기
+ctx.beginPath();
+ctx.arc(150, 200, 50, 0, 2*Math.PI, true); 
+ctx.fillStyle = "red"; // 선 색상 빨간색
+ctx.fill(); // 반원 선 채우기
+
+// 두 번째 반원 그리기
+ctx.beginPath(); // 새로운 경로 시작
+ctx.arc(250, 200, 50, 0, 2*Math.PI, true);
+ctx.fill(); // 반원 선 채우기
+
+// 삼각형 그리기
+ctx.beginPath(); // 새로운 경로 시작
+ctx.moveTo(100, 200); // 시작점
+ctx.lineTo(300, 200); // 첫 번째 꼭지점
+ctx.lineTo(200, 320); // 두 번째 꼭지점
+ctx.closePath(); // 패스 닫기
+ctx.fillStyle = "red"; // 내부 색상 설정
+ctx.fill(); // 내부 채우기
+</script>
+
+</body>
+</html>

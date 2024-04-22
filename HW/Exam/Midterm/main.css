@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(72, 153, 242);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+canvas {
+    background-color: rgb(180, 180, 180);
+    width: 600px;
+    height: 800px;
+    margin: 50px 0;
+}

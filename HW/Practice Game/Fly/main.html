@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 문서의 문자 인코딩 및 뷰포트 설정 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 페이지 제목 설정 -->
+    <title>Flappy Bird</title>
+    <!-- 스타일 시트 -->
+    <style>
+        /* 캔버스 스타일 설정 */
+        canvas {
+            border: 1px dashed black; /* 점선 스타일의 흰색 테두리 */
+            display: block;
+            margin: 700px auto 0; /* 상단 마진 추가 */
+            background-color: white; /* 캔버스 배경색 흰색으로 설정 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 게임 캔버스 요소 -->
+    <canvas id="canvas" width="1500" height="2000"></canvas>
+    <script>
+        // 캔버스와 그래픽 컨텍스트 가져오기
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
+
+        // Bird 객체 초기 설정
+        const bird = {
+            x: 50,
+            y: canvas.height / 2,
+            radius: 30,
+            velocityY: 0,
+            gravity: 0.5
+        };
+
+        // 파이프 배열 및 초기 설정
+        const pipes = [];
+        const pipeWidth = 50;
+        const initialPipeGap = 200;
+        let pipeTimer = 0;
+        let isGameOver = false;
+
+        // 파이프 생성 함수
+        function createPipe() {
+            const gap = initialPipeGap * Math.pow(0.95, pipes.length);
+            const pipeHeight = Math.random() * (canvas.height - gap * 2) + gap;
+            const pipeColor = getRandomPipeColor(); // 랜덤 파이프 색상 생성
+            pipes.push({ x: canvas.width, y: 0, height: pipeHeight, color: pipeColor });
+            pipes.push({ x: canvas.width, y: pipeHeight + gap, height: canvas.height - pipeHeight - gap, color: pipeColor });
+        }
+
+        // 파이프 그리기 함수
+        function drawPipes() {
+            for (let i = 0; i < pipes.length; i++) {
+                const p = pipes[i];
+                context.fillStyle = p.color; // 파이프 색상 설정
+                context.fillRect(p.x, p.y, pipeWidth, p.height); // 파이프 그리기
+            }
+        }
+
+        // 파이프 업데이트 함수
+        function updatePipes() {
+            if (!isGameOver) {
+                pipeTimer++;
+                const pipeInterval = Math.floor(Math.random() * 61) + 240; // 4초에서 5초 사이의 랜덤 값
+                if (pipeTimer === pipeInterval) {
+                    createPipe();
+                    pipeTimer = 0;
+                }
+            }
+
+            // 파이프 이동 및 충돌 검사
+            for (let i = 0; i < pipes.length; i++) {
+                const p = pipes[i];
+                p.x -= 2;
+                if (p.x + pipeWidth < 0) {
+                    pipes.splice(i, 1);
+                    i--;
+                }
+            }
+            
+            // 새와의 충돌 검사
+            for (let i = 0; i < pipes.length; i += 2) {
+                const upperPipe = pipes[i];
+                const lowerPipe = pipes[i + 1];
+                if (!isGameOver && bird.x + bird.radius > upperPipe.x && bird.x - bird.radius < upperPipe.x + pipeWidth &&
+                    (bird.y - bird.radius < upperPipe.y + upperPipe.height || bird.y + bird.radius > lowerPipe.y)) {
+                    gameOver();
+                    return; // 충돌 발생 시 파이프 업데이트 중단
+                }
+            }
+            
+            // 새가 바닥에 닿았는지 검사
+            if (bird.y + bird.radius > canvas.height) {
+                gameOver();
+            }
+        }
+
+        // 랜덤 파이프 색상 반환 함수
+        function getRandomPipeColor() {
+            const colors = ["green", "red", "blue", "yellow", "orange"]; // 파이프 색상 목록
+            return colors[Math.floor(Math.random() * colors.length)]; // 랜덤 색상 반환
+        }
+
+        // 게임 종료 함수
+        function gameOver() {
+            isGameOver = true;
+            
+            // 게임 오버 화면의 흰 배경 그리기
+            context.fillStyle = "white";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // "Game Over" 텍스트 검은색으로 그리기
+            context.fillStyle = "black";
+            context.font = "100px Arial"; // 글꼴 크기 조정
+            context.fillText("Game Over", canvas.width / 2 - 250, canvas.height / 2);
+        }
+
+        // 새 그리기 함수
+        function drawBird() {
+            context.beginPath();
+            context.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+            context.fillStyle = "Black"; // 새의 색상 설정
+            context.fill();
+            context.closePath();
+        }
+
+        // 새 업데이트 함수
+        function updateBird() {
+            bird.velocityY += bird.gravity; // 중력 적용
+            bird.y += bird.velocityY; // 위치 업데이트
+        }
+
+        // 키보드 컨트롤
+        document.addEventListener("keydown", function(event) {
+            if (event.code === "Space" && !isGameOver) { // 스페이스바 키 입력 시
+                bird.velocityY = -10; // 새의 수직 속도 설정
+            }
+        });
+
+        // 게임 루프
+        let animationID;
+        function draw() {
+            context.clearRect(0, 0, canvas.width, canvas.height); // 캔버스 지우기
+            
+            drawBird(); // 새 그리기
+            updateBird(); // 새 업데이트
+            drawPipes(); // 파이프 그리기
+            updatePipes(); // 파이프 업데이트
+            
+            if (!isGameOver) {
+                animationID = requestAnimationFrame(draw); // 게임이 종료되지 않았다면 다음 프레임 요청
+            }
+        }
+
+        createPipe(); // 초기 파이프 생성
+        draw(); // 게임 루프 시작
+    </script>
+</body>
+</html>

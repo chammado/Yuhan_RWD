@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dinosaur Game</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="800"></canvas>
+    <div id="game-over" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+        <h1>Game Over</h1>
+        <button id="restart-button">Restart</button>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let isGameRunning = false;  // 게임 상태를 나타내는 변수 추가
+
+        let dinosaur = {
+            x: 50,
+            y: 750,
+            width: 50,
+            height: 50,
+            jumpHeight: 100,
+            jumping: false
+        };
+
+        let obstacle = {
+            x: canvas.width,
+            y: 750,
+            width: 50,
+            height: 50,
+            speed: 5
+        };
+
+        function drawDinosaur() {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(dinosaur.x, dinosaur.y, dinosaur.width, dinosaur.height);
+        }
+        
+
+        function drawObstacle() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
+
+        function moveObstacle() {
+            obstacle.x -= obstacle.speed;
+
+            if (obstacle.x + obstacle.width < 0) {
+                obstacle.x = canvas.width;
+            }
+        }
+
+        function jump() {
+            if (!dinosaur.jumping && isGameRunning) {  // 게임이 실행 중일 때만 점프 가능
+                dinosaur.jumping = true;
+                let jumpDuration = 500;
+                let startTime = Date.now();
+
+                function update() {
+                    let elapsedTime = Date.now() - startTime;
+                    if (elapsedTime < jumpDuration) {
+                        let progress = elapsedTime / jumpDuration;
+                        dinosaur.y = 750 - dinosaur.jumpHeight * Math.sin(progress * Math.PI);
+                        requestAnimationFrame(update);
+                    } else {
+                        dinosaur.y = 750;
+                        dinosaur.jumping = false;
+                    }
+                }
+
+                update();
+            }
+        }
+
+        function checkCollision() {
+            if (dinosaur.x < obstacle.x + obstacle.width &&
+                dinosaur.x + dinosaur.width > obstacle.x &&
+                dinosaur.y < obstacle.y + obstacle.height &&
+                dinosaur.y + dinosaur.height > obstacle.y) {
+                gameOver();
+            }
+        }
+
+        function gameOver() {
+            document.getElementById('game-over').style.display = 'block';
+            isGameRunning = false;  // 게임 상태 종료
+        }
+
+        function restartGame() {
+            document.getElementById('game-over').style.display = 'none';
+            dinosaur.x = 50;
+            dinosaur.y = 750;
+            dinosaur.jumping = false;
+            obstacle.x = canvas.width;
+            isGameRunning = true;  // 게임 상태 시작
+            gameLoop();
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawDinosaur();
+            drawObstacle();
+            moveObstacle();
+            checkCollision();
+
+            if (isGameRunning) {  // 게임이 실행 중일 때만 루프 실행
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.keyCode === 32) {
+                if (!isGameRunning) {
+                    restartGame();  // 게임이 실행되지 않았을 때 스페이스 바를 누르면 게임 시작
+                } else {
+                    jump();
+                }
+            }
+        });
+
+        document.getElementById('restart-button').addEventListener('click', restartGame);
+
+        // 초기 게임 상태 설정
+        document.getElementById('game-over').style.top = `${canvas.height / 2}px`;
+        document.getElementById('game-over').style.left = `${canvas.width / 2}px`;
+
+        gameLoop();
+    </script>
+</body>
+</html>

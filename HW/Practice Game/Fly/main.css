@@ -1,0 +1,48 @@
+
+body {
+    margin: 1000;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vh;
+    background-color: white;
+}
+
+#game-container {
+    position: relative;
+    width: 3000px;
+    height: 3000px;
+    background-color: #87CEEB;
+    overflow: hidden;
+}
+
+#bird {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: aqua;
+    background-size: cover;
+    top: 50%;
+    left: 50px; /* initial position */
+    transform: translateY(-50%);
+}
+
+.pipe {
+    position: absolute;
+    width: 80px;
+    background-color: green;
+}
+
+#pipe1 {
+    left: 100px; /* 파이프1의 초기 위치 */
+    height: 5000px; /* 파이프1의 초기 높이 */
+    top: 1000px; /* 파이프1의 초기 y 위치 (화면 위쪽) */
+}
+
+#pipe2 {
+    left: 100px; /* 파이프2의 초기 위치 */
+    height: 10000px; /* 파이프2의 초기 높이 */
+    bottom: -1000px; /* 파이프2의 초기 y 위치 (화면 아래쪽) */
+}
