@@ -1,0 +1,81 @@
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgb(72, 153, 242);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#canvasContainer {
+    position: relative;
+    width: 600px; /* 캔버스와 패딩 포함한 가로 크기 설정 */
+    height: 800px; /* 캔버스와 동일한 세로 크기 설정 */
+    overflow: hidden; /* 캔버스 밖으로 벗어나는 요소들을 숨김 */
+    box-sizing: border-box; /* 테두리를 포함한 크기로 설정 */
+}
+
+canvas {
+    background-color: rgb(180, 180, 180);
+    width: 600px;
+    height: 800px;
+    margin: 50px auto; /* 위아래 50px만큼 여백을 둡니다. 좌우 여백은 자동으로 조절됩니다. */
+}
+
+#startButton {
+    position: absolute; /* 절대 위치로 설정 */
+    left: 50%; /* 가로 가운데 정렬 */
+    bottom: 200px; /* 아래로부터 20px 떨어진 위치 */
+    transform: translateX(-50%); /* 가로 가운데 정렬을 위한 이동 */
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    background-color: #c8c7c7; /* 초기 버튼 색상: 회색 */
+    transition: background-color 0.3s ease; /* 색상 변경 애니메이션 */
+}
+
+#startButton:hover {
+    background-color: rgb(218, 218, 158); /* 마우스를 올릴 때 색상 변경: 베이지 */
+}
+
+#startButton:active {
+    background-color: rgb(7, 58, 239); /* 마우스를 클릭했을 때 색상 변경: 파란색 */
+}
+
+#canvasText {
+    position: absolute; /* 절대 위치로 설정 */
+    left: 50%; /* 가로 가운데 정렬 */
+    top: 20px; /* 위로부터 20px 떨어진 위치 */
+    transform: translateX(-50%); /* 가로 가운데 정렬을 위한 이동 */
+    color: white;
+    font-size: 24px;
+    text-align: center; /* 텍스트 중앙 정렬 */
+    transition: opacity 0.5s ease; /* 투명도 변경 애니메이션 */
+}
+
+.hidden {
+    opacity: 0; /* 숨겨진 상태일 때 투명도를 0으로 설정하여 사라지도록 함 */
+}
+
+p {
+    position: relative; /* 상대적인 위치 설정 */
+    top: 100px; /* 아래로 20px 이동 */
+    color: blueviolet; /* 텍스트 색상을 blueviolet으로 변경 */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 50px;
+    font-weight: bold; /* 글자를 두껍게 설정 */}
+
+h6 {
+    position: relative; /* 상대적인 위치 설정 */
+    top: 150px; /* 아래로 20px 이동 */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    color: white;
+}
