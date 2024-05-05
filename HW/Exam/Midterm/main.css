@@ -12,5 +12,22 @@ canvas {
     background-color: rgb(180, 180, 180);
     width: 600px;
     height: 800px;
-    margin: 50px 0;
+    margin: 50px auto; /* 위아래 50px만큼 여백을 둡니다. 좌우 여백은 자동으로 조절됩니다. */
+}
+
+#myButton {
+    position: absolute;
+    top: calc(50% - 20px); /* 캔버스의 중앙에서 버튼의 높이의 절반을 뺀 값 */
+    left: 50%; /* 가운데 정렬 */
+    transform: translateX(-50%); /* 가운데 정렬 */
+    display: none; /* 초기에는 숨김 */
+}
+
+#title {
+    position: absolute;
+    top: calc(50% - 100px); /* 버튼 위에 위치하도록 조정 */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    color: blueviolet;
 }
