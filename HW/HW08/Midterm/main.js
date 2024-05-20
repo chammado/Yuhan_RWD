@@ -31,13 +31,11 @@ function drawStar() {
 }
 
 // 하트를 그리는 함수
-function drawHeart() {
-    const x = canvas.width / 2;  // 하트 위치
-    const y = canvas.height / 2;  // 하트 위치
+function drawHeart(x, y) {
     const size = 50;  // 하트 크기
 
     ctx.save(); // 현재 변형 매트릭스를 저장
-    ctx.translate(x, y); // 하트의 중심으로 이동
+    ctx.translate(x, y); // 하트의 위치를 매개변수로 받은 위치로 설정
     ctx.rotate(playerAngle); // 플레이어 각도만큼 회전
     ctx.beginPath();
   
@@ -61,21 +59,33 @@ function drawHeart() {
     ctx.restore(); // 이전에 저장한 변형 매트릭스로 복원
 }
 
+
 // 캔버스 클리어 함수
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // 화면 갱신 함수
+// 화면 갱신 함수
 function update() {
+    // 하트의 위치를 플레이어의 위치로 설정
+    var heartX = playerX - 25; // 하트의 가로 크기의 절반을 빼서 중앙 정렬
+    var heartY = playerY - 25; // 하트의 세로 크기의 절반을 빼서 중앙 정렬
+
+    // 캔버스를 지우고 다시 그립니다.
     clearCanvas();
-    // 캔버스를 중심으로 이동하여 하트가 캔버스 중앙에 위치하도록 함
-    var offsetX = canvas.width / 2 - playerX;
-    var offsetY = canvas.height / 2 - playerY;
-    ctx.translate(offsetX, offsetY); // 캔버스 이동
+
+    // 캔버스를 이동하여 하트가 화면의 중심에 위치하도록 합니다.
+    var offsetX = canvas.width / 2 - heartX;
+    var offsetY = canvas.height / 2 - heartY;
+    ctx.translate(offsetX, offsetY);
+
     drawStar(starX, starY);
     drawEnemies(); // 적 그리기
-    drawHeart(); // 하트 그리기
+    drawHeart(heartX, heartY); // 하트 그리기
+
+    // 변형 매트릭스를 원래대로 복원합니다.
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 // 자동 회전 함수
@@ -117,7 +127,7 @@ function createEnemy() {
     // 적의 초기 위치를 캔버스의 외부로 설정
     var startX = Math.random() < 0.5 ? -100 : canvas.width + 100;
     var startY = Math.random() * canvas.height;
-    var speed = Math.random() * 3 + 1; // 1에서 4 사이의 랜덤한 속도값 설정
+    var speed = Math.random() * 0.5 + 0.5; // 1에서 4 사이의 랜덤한 속도값 설정
     var enemy = {
         x: startX, // 캔버스 외부에서 생성
         y: startY, // 캔버스 외부에서 생성
@@ -136,7 +146,7 @@ function drawEnemies() {
     for (var i = 0; i < enemies.length; i++) {
         var enemy = enemies[i];
         // 캔버스 범위를 벗어나도 그리기
-        moveTowardsCenter(enemy); // 중앙으로 이동
+        moveTowardsHeart(enemy); // 하트 방향으로 이동
         drawCircle(enemy.x, enemy.y, enemy.radius, enemy.color); // 각 적의 고유한 색상으로 원을 그림
         if (isColliding(enemy)) {
             enemies.splice(i, 1); // 하트에 닿으면 제거
@@ -146,9 +156,9 @@ function drawEnemies() {
 }
 
 // 적을 중앙으로 이동시키는 함수
-function moveTowardsCenter(enemy) {
-    var dx = canvas.width / 2 - enemy.x;
-    var dy = canvas.height / 2 - enemy.y;
+function moveTowardsHeart(enemy) {
+    var dx = playerX - enemy.x;
+    var dy = playerY - enemy.y;
     var distance = Math.sqrt(dx * dx + dy * dy);
     var speed = enemy.speed; // 적의 속도를 사용
     if (distance > 1) {
@@ -162,7 +172,7 @@ function isColliding(enemy) {
     var dx = playerX - enemy.x;
     var dy = playerY - enemy.y;
     var distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < enemy.radius + 30; // 하트 반지름과 적의 반지름의 합이 충돌 거리보다 작으면 충돌로 판정
+    return distance < enemy.radius + 15; // 하트 반지름과 적의 반지름의 합이 충돌 거리보다 작으면 충돌로 판정
 }
 
 // 랜덤한 색상을 반환하는 함수
@@ -183,3 +193,29 @@ function drawCircle(x, y, radius, color) {
     ctx.fill();
     ctx.closePath();
 }
+
+function handleKeyDown(event) {
+    const moveDistance = 10;
+
+    switch (event.key) {
+        case 'ArrowUp':
+            playerY -= moveDistance;
+            break;
+        case 'ArrowDown':
+            playerY += moveDistance;
+            break;
+        case 'ArrowLeft':
+            playerX -= moveDistance;
+            break;
+        case 'ArrowRight':
+            playerX += moveDistance;
+            break;
+    }
+
+    // 캔버스를 지우고 다시 그립니다.
+    update();
+}
+
+// 키보드 이벤트 리스너 등록
+document.addEventListener('keydown', handleKeyDown);
+
