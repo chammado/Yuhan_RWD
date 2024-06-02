@@ -1,162 +1,277 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const rotateButton = document.getElementById("myButton");
-    const title = document.getElementById("title");
-    const heartCanvas = new HeartCanvas('myCanvas'); // 클래스 인스턴스 생성
+var canvas = document.getElementById('myCanvas');
+var ctx = canvas.getContext('2d');
+var starX, starY;
+var playerX = canvas.width / 2;
+var playerY = canvas.height / 2;
+var playerSpeed = 2;
+var starSpeed = 2;
+var playerAngle = 0;
+var rotationSpeed = 0.1;
+var enemies = [];
+var heartHealth = 3;
+var animationId;
+var intervalId;
+var gameEnded = false;
+var keys = {};
+var restartButton = document.getElementById('restartButton');
+restartButton.addEventListener('click', startGame);
 
-    // 초기에는 버튼만 보이도록 설정
-    rotateButton.style.display = "block";
-    title.style.display = "block";
-    heartCanvas.hideShapes(); // 하트와 별 가리기
+// 스택 생성
+var enemyStack = [];
 
-    // 버튼 클릭 이벤트 리스너
-    rotateButton.addEventListener("click", function() {
-        // 버튼 숨기기
-        rotateButton.style.display = "none";
-        // 제목 숨기기
-        title.style.display = "none";
-        // 애니메이션 실행
-        animate();
-    });
-
-    // 애니메이션 함수 호출
-    function animate() {
-        // 하트와 별 가리기
-        heartCanvas.hideShapes();
-        // 애니메이션 실행
-        function animateCanvas() {
-            heartCanvas.ctx.clearRect(0, 0, heartCanvas.canvas.width, heartCanvas.canvas.height);
-            heartCanvas.drawStar();
-            heartCanvas.rotateHeart();
-            requestAnimationFrame(animateCanvas);
-        }
-        animateCanvas(); // 애니메이션 실행
-    }
-
-    // 버튼 위로 마우스를 올리면 색상 변경
-    rotateButton.addEventListener("mouseover", function() {
-        rotateButton.style.backgroundColor = "green";
-    });
-
-    // 마우스가 버튼을 벗어나면 색상 원래대로 변경
-    rotateButton.addEventListener("mouseout", function() {
-        rotateButton.style.backgroundColor = "";
-    });
-
-    // 마우스 다운 이벤트가 발생하면 색상 변경
-    rotateButton.addEventListener("mousedown", function() {
-        rotateButton.style.backgroundColor = "blue";
-    });
-
-    // 마우스 업 이벤트가 발생하면 색상 원래대로 변경
-    rotateButton.addEventListener("mouseup", function() {
-        rotateButton.style.backgroundColor = "";
-    });
+document.addEventListener('keydown', function(event) {
+    keys[event.code] = true;
 });
 
-class HeartCanvas {
-    constructor(canvasId) {
-        this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = 600;
-        this.canvas.height = 800;
+document.addEventListener('keyup', function(event) {
+    keys[event.code] = false;
+});
 
-        this.starX = Math.random() * this.canvas.width;
-        this.starY = Math.random() * this.canvas.height;
-        this.heartAngle = 0; // 하트 회전 각도
+function movePlayer() {
+    if (keys['ArrowUp'] || keys['KeyW']) {
+        playerY -= playerSpeed;
+    }
+    if (keys['ArrowDown'] || keys['KeyS']) {
+        playerY += playerSpeed;
+    }
+    if (keys['ArrowLeft'] || keys['KeyA']) {
+        playerX -= playerSpeed;
+    }
+    if (keys['ArrowRight'] || keys['KeyD']) {
+        playerX += playerSpeed;
+    }
+}
 
-        this.drawHeart();
-        this.drawStar();
+// 별의 좌표를 플레이어의 위치에 따라 동적으로 계산하여 그리도록 수정
+function drawStar() {
+    const size = 10; // 별 크기
+    var x = starX - playerX + canvas.width / 2; // 수정: 플레이어의 위치에 따라 x 좌표 계산
+    var y = starY - playerY + canvas.height / 2; // 수정: 플레이어의 위치에 따라 y 좌표 계산
 
-        // 키보드 이벤트 리스너 추가
-        document.addEventListener('keydown', (event) => this.handleKeyDown(event));
+    this.ctx.fillStyle = 'yellow';  // 채우기 색상 설정
+    this.ctx.strokeStyle = '#000000'; // 테두리 색상을 검은색으로 설정
+    this.ctx.beginPath();
+
+    // 별 모양 그리기
+    for (let i = 0; i < 5; i++) {
+        this.ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * size + x,
+                        -Math.sin((18 + i * 72) * Math.PI / 180) * size + y);
+        this.ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * size / 2 + x,
+                        -Math.sin((54 + i * 72) * Math.PI / 180) * size / 2 + y);
     }
 
-    drawHeart() {
-        const x = this.canvas.width / 2;  // 하트 위치
-        const y = this.canvas.height / 2;  // 하트 위치
-        const size = 50;  // 하트 크기
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke(); // 테두리 그리기
+}
+
+// 하트를 그리는 함수
+function drawHeart() {
+    const x = canvas.width / 2;  // 하트 위치
+    const y = canvas.height / 2;  // 하트 위치
+    const size = 50;  // 하트 크기
+
+    ctx.save(); // 현재 변형 매트릭스를 저장
+    ctx.translate(x, y); // 하트의 중심으로 이동
+    ctx.rotate(playerAngle); // 플레이어 각도만큼 회전
+    ctx.beginPath();
+  
+    ctx.moveTo(0, -size / 4); // 시작점
+  
+    // 곡선 좌표 계산
+    for (let i = 0; i < 360; i++) {
+        const t = i * Math.PI / 180;
+        const px = 16 * Math.pow(Math.sin(t), 3);
+        const py = - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+        ctx.lineTo(px, py);
+    }
+  
+    ctx.closePath();
     
-        this.ctx.fillStyle = '#C00000';  // 채우기 색상 설정
-        this.ctx.strokeStyle = '#000000'; // 테두리 색상을 검은색으로 설정
-        this.ctx.beginPath();
-      
-        this.ctx.moveTo(x, y + size / 4); // 시작점
-      
-        // 곡선 좌표 계산
-        for (let i = 0; i < 360; i++) {
-            const t = i * Math.PI / 180;
-            const px = 16 * Math.pow(Math.sin(t), 3);
-            const py = - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-            this.ctx.lineTo(px + x, py + y);
+    ctx.fillStyle = '#C00000';  // 채우기 색상 설정
+    ctx.strokeStyle = '#000000'; // 테두리 색상을 검은색으로 설정
+    
+    ctx.stroke(); // 테두리 그리기
+    ctx.fill();
+    ctx.restore(); // 이전에 저장한 변형 매트릭스로 복원
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawHUD() {
+    ctx.font = '24px Arial';
+    ctx.fillStyle = 'white';
+    ctx.fillText('HP: ' + heartHealth, 20, 40);
+}
+
+function update() {
+    clearCanvas();
+    movePlayer();
+    checkPlayerCollisionWithStar();
+    drawHeart(canvas.width / 2, canvas.height / 2, playerAngle);
+    drawStar(starX - playerX + canvas.width / 2, starY - playerY + canvas.height / 2);
+    drawEnemies();
+    drawHUD();
+}
+
+function autoRotate() {
+    if (!gameEnded) {
+        playerAngle += rotationSpeed;
+        update();
+        animationId = requestAnimationFrame
+        (autoRotate);
+    }
+}
+
+var startButton = document.getElementById('startButton');
+startButton.addEventListener('click', function() {
+    startButton.style.display = 'none';
+    document.getElementById('canvasContainer').style.border = 'none';
+    document.getElementById('canvasText').classList.add('hidden');
+    var enemyCount = Math.floor(Math.random() * 11) + 5;
+    for (var i = 0; i < enemyCount; i++) {
+        createEnemy();
+    }
+    drawRandomStar();
+    autoRotate();
+    intervalId = setInterval(function() {
+        createEnemy();
+    }, 1000);
+});
+
+function drawRandomStar() {
+    var margin = 40; 
+    starX = Math.random() * (canvas.width - 2 * margin) + margin;
+    starY = Math.random() * (canvas.height - 2 * margin) + margin;
+    update();
+}
+
+function createEnemy() {
+    var angle = Math.random() * Math.PI * 2;
+    var startX = Math.random() * canvas.width;
+    var startY = Math.random() * canvas.height;
+
+    if (Math.random() < 0.5) {
+        startX = Math.random() < 0.5 ? -canvas.width : canvas.width * 1.5;
+    } else {
+        startY = Math.random() < 0.5 ? -canvas.height : canvas.height * 1.5;
+    }
+    var speed = Math.random() * 1 + 0.5; // 더 낮은 속도로 조절
+    var enemy = {
+        x: startX,
+        y: startY,
+        radius: Math.random() * 10 + 5,
+        color: getRandomColor(),
+        speed: speed,
+        speedX: Math.cos(angle) * speed, // 수정: speedX 및 speedY 추가
+        speedY: Math.sin(angle) * speed
+    };
+    enemyStack.push(enemy);
+}
+
+// drawEnemies 함수 내에서 moveTowardsHeart 함수 호출 추가
+function drawEnemies() {
+    for (var i = 0; i < enemyStack.length; i++) {
+        var enemy = enemyStack[i];
+        moveTowardsHeart(enemy); // 수정: moveTowardsHeart 함수 호출 추가
+        drawCircle(enemy.x - playerX + canvas.width / 2, enemy.y - playerY + canvas.height / 2, enemy.radius, enemy.color);
+        if (isColliding(enemy)) {
+            enemyStack.splice(i, 1);
+            heartHealth--;
+            if (heartHealth <= 0) {
+                endGame();
+            }
+            i--;
         }
-      
-        this.ctx.closePath();
-        
-        this.ctx.stroke(); // 테두리 그리기
-        this.ctx.fill();
     }
+}
 
-    drawStar() {
-        const size = 10; // 별 크기
+function moveTowardsHeart(enemy) {
+    var dx = playerX - enemy.x;
+    var dy = playerY - enemy.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    var speed = enemy.speed; // 적의 속도를 사용
+    if (distance > 1) {
+        enemy.x += dx / distance * speed;
+        enemy.y += dy / distance * speed;
+    }
+}
+
+function isColliding(enemy) {
+    var dx = playerX - enemy.x;
+    var dy = playerY - enemy.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < enemy.radius;
+}
+
+function checkPlayerCollisionWithStar() {
+    var dx = playerX - starX;
+    var dy = playerY - starY;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    var playerRadius = 30; 
+    var starRadius = 40; 
+
+    if (distance < playerRadius + starRadius) {
+        console.log("플레이어가 별에 내접했습니다!");
+    }
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function drawCircle(x, y, radius, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+}
+
+function endGame() {
+    clearCanvas();
+    gameEnded = true;
+    cancelAnimationFrame(animationId);
+    clearInterval(intervalId);
+    startButton.style.display = 'none'; // 시작 버튼 숨김
+    restartButton.style.display = 'block'; // 재시작 버튼 표시
+
+    document.getElementById('canvasText02').classList.remove('hidden');
+    // canvasContainer 숨김, canvasContainer02 표시
+    document.getElementById('canvasContainer').style.display = 'none';
+    document.getElementById('canvasContainer02').style.display = 'block'
+
+    // 캔버스의 배경색을 빨간색으로 변경
+    document.getElementById('myCanvas02').style.backgroundColor = 'red';   
     
-        this.ctx.fillStyle = 'yellow';  // 채우기 색상 설정
-        this.ctx.strokeStyle = '#000000'; // 테두리 색상을 검은색으로 설정
-        this.ctx.beginPath();
-    
-        // 별 모양 그리기
-        for (let i = 0; i < 5; i++) {
-            this.ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * size + this.starX,
-                            -Math.sin((18 + i * 72) * Math.PI / 180) * size + this.starY);
-            this.ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * size / 2 + this.starX,
-                            -Math.sin((54 + i * 72) * Math.PI / 180) * size / 2 + this.starY);
-        }
-    
-        this.ctx.closePath();
-        this.ctx.fill();
-        this.ctx.stroke(); // 테두리 그리기
+    enemyStack = []; // 스택 초기화
+    heartHealth = 3;
+    restartButton.addEventListener('click', startGame);
+}
+
+function startGame() {
+    gameEnded = false;
+    restartButton.style.display = 'none';
+    document.getElementById('canvasText02').classList.add('hidden');
+    var enemyCount = Math.floor(Math.random() * 11) + 5;
+    for (var i = 0; i < enemyCount; i++) {
+        createEnemy();
     }
+    drawRandomStar();
+    autoRotate();
+    intervalId = setInterval(function() {
+        createEnemy();
+    }, 1000);
 
-    handleKeyDown(event) {
-        console.log('Key down:', event.key);
+    document.getElementById('canvasContainer02').style.display = 'none';
+    document.getElementById('canvasContainer').style.display = 'block';
 
-        const moveDistance = 10;
-
-        switch (event.key) {
-            case 'ArrowUp':
-                this.starY += moveDistance;
-                break;
-            case 'ArrowDown':
-                this.starY -= moveDistance;
-                break;
-            case 'ArrowLeft':
-                this.starX += moveDistance;
-                break;
-            case 'ArrowRight':
-                this.starX -= moveDistance;
-                break;
-        }
-
-        // 캔버스 지우고 다시 그리기
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawHeart();
-        this.drawStar();
-    }
-
-    rotateHeart() {
-        const x = this.canvas.width / 2;
-        const y = this.canvas.height / 2;
-
-        this.ctx.save();
-        this.ctx.translate(x, y); // 하트의 중심으로 이동
-        this.ctx.rotate(this.heartAngle);
-        this.ctx.translate(-x, -y); // 원래 위치로 이동
-        this.drawHeart();
-        this.ctx.restore();
-
-        this.heartAngle += Math.PI / 100;
-    }
-
-    hideShapes() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+    restartButton.removeEventListener('click', startGame);
 }

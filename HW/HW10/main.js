@@ -203,7 +203,7 @@ function isColliding(enemy) {
     var dx = playerX - enemy.x;
     var dy = playerY - enemy.y;
     var distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < enemy.radius + 30;
+    return distance < enemy.radius;
 }
 
 function checkPlayerCollisionWithStar() {
